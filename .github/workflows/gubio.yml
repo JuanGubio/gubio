@@ -6,6 +6,7 @@ on:
       - gubio
 
 permissions:
+  id-token: write
   contents: read
   packages: write
 
@@ -62,7 +63,6 @@ jobs:
           script: |
             echo "SSH OK"
             mkdir -p ~/gubio
-            mkdir -p ~/irina
 
       - name: Copy stack.yml to VPS
         uses: appleboy/scp-action@v1
