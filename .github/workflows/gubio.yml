@@ -11,7 +11,7 @@ permissions:
   packages: write
 
 env:
-  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/gubio-app
+  IMAGE_NAME: ghcr.io/juangubio/gubio-app
   IMAGE_TAG: 1.0.5
 
 jobs:
@@ -19,40 +19,48 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Descargar el repo
       - uses: actions/checkout@v4
 
+      # 2. Configurar Python
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
         with:
           python-version: "3.11"
 
+      # 3. Instalar requirements
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      # 4. Login GHCR (con usuario en minúsculas obligatorio)
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.repository_owner }}
+          username: juangubio
           password: ${{ secrets.GHCR_PAT }}
 
+      # 5. Build & Push Docker image
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+          tags: ghcr.io/juangubio/gubio-app:${{ env.IMAGE_TAG }}
 
+      # 6. Debug de secrets
       - name: Debug secrets
         run: |
           echo "HOST='${{ secrets.VPS_HOST }}'"
           echo "USER='${{ secrets.VPS_USER }}'"
           echo "PORT='${{ secrets.VPS_SSH_PORT }}'"
 
+      # 7. Testear puerto SSH
       - name: Test SSH port
         run: |
           nc -zv ${{ secrets.VPS_HOST }} ${{ secrets.VPS_SSH_PORT }} || echo "SSH PORT NOT OPEN"
 
+      # 8. Verificar conexión SSH
       - name: SSH Connected OK?
         uses: appleboy/ssh-action@v1
         with:
@@ -64,6 +72,7 @@ jobs:
             echo "SSH OK"
             mkdir -p ~/gubio
 
+      # 9. Copiar stack.yml al VPS
       - name: Copy stack.yml to VPS
         uses: appleboy/scp-action@v1
         with:
@@ -74,6 +83,7 @@ jobs:
           source: "stack.yml"
           target: "/home/${{ secrets.VPS_USER }}/gubio"
 
+      # 10. Desplegar stack en Docker Swarm
       - name: Deploy stack
         uses: appleboy/ssh-action@v1
         with:
@@ -84,11 +94,18 @@ jobs:
           script: |
             cd ~/gubio
 
-            docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GHCR_PAT }}
-            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+            echo "LOGIN GHCR..."
+            docker login ghcr.io -u juangubio -p ${{ secrets.GHCR_PAT }}
 
+            echo "PULL IMAGEN..."
+            docker pull ghcr.io/juangubio/gubio-app:${{ env.IMAGE_TAG }}
+
+            echo "REMOVIENDO STACK ANTERIOR..."
             docker stack rm gubio || true
             sleep 20
 
+            echo "DESPLEGANDO NUEVO STACK..."
             docker stack deploy --with-registry-auth -c stack.yml gubio
+
+            echo "SERVICIOS ACTIVOS:"
             docker service ls
