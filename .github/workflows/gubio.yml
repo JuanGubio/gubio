@@ -1,0 +1,113 @@
+name: gubio application
+
+on:
+  push:
+    branches:
+      - gubio
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/irina-app
+  IMAGE_TAG: 1.0.5
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Código del repo
+      - uses: actions/checkout@v4
+
+      # 2. Python
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.11"
+
+      # 3. Dependencias
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # 4. Login a GHCR con el token de ELLA
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GHCR_PAT }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/lizirina/irina-app:1.0.5
+
+      # 6. Debug de secrets (solo para verificar)
+      - name: Debug secrets
+        run: |
+          echo "HOST='${{ secrets.VPS_HOST }}'"
+          echo "USER='${{ secrets.VPS_USER }}'"
+          echo "PORT='${{ secrets.VPS_SSH_PORT }}'"
+
+      # 7. Probar puerto SSH (1003 en el secret VPS_SSH_PORT)
+      - name: Test SSH port
+        run: |
+          echo "Testing SSH port..."
+          nc -zv ${{ secrets.VPS_HOST }} ${{ secrets.VPS_SSH_PORT }} || echo "SSH PORT NOT OPEN"
+
+      # 8. Probar login SSH
+      - name: SSH Connected OK?
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            echo "SSH OK"
+            hostname
+            whoami
+            uptime
+
+      # 9. Copiar stack.yml al servidor (carpeta irina)
+      - name: Copy stack.yml to VPS
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          source: "stack.yml"
+          target: "/home/${{ secrets.VPS_USER }}/irina"
+
+      # 10. Desplegar stack en Swarm
+      - name: Deploy stack
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: ${{ secrets.VPS_SSH_PORT }}
+          script: |
+            echo "Desplegando stack..."
+            cd ~/irina
+
+            echo "PULL DE LA IMAGEN"
+            docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GHCR_PAT }}
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
+
+            echo "BAJANDO SERVICIO ANTERIOR"
+            docker stack rm irina || true
+
+            echo "ESPERANDO 20s..."
+            sleep 20
+
+            echo "DESPLEGANDO NUEVO STACK"
+            docker stack deploy --with-registry-auth -c stack.yml gubio
+
+            echo "SERVICIOS ACTIVOS:"
+            docker service ls
