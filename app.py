@@ -98,7 +98,7 @@ def home():
     return render_template_string(
         html_base,
         title="Juanpi Tags",
-        heading="Bienvenido a Juanpi Tags",
+        heading="Bienvenido a Juanpi el mas pro Tags",
         message="Servidor Flask desplegado con Docker + CI/CD.",
         button_text="Ver información",
         button_link="/about"
