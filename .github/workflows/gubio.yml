@@ -6,9 +6,9 @@ on:
       - gubio
 
 permissions:
-  id-token: write
   contents: read
   packages: write
+  id-token: write
 
 env:
   IMAGE_NAME: ghcr.io/juangubio/gubio-app
@@ -19,7 +19,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Set up Python 3.11
         uses: actions/setup-python@v3
@@ -36,24 +37,24 @@ jobs:
           username: juangubio
           password: ${{ secrets.GHCR_PAT }}
 
-      - name: Build and push Docker image
+      - name: Build & Push Docker Image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: ghcr.io/juangubio/gubio-app:${{ env.IMAGE_TAG }}
+          tags: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
-      - name: Debug secrets
+      - name: Debug Secrets
         run: |
           echo "HOST='${{ secrets.VPS_HOST }}'"
           echo "USER='${{ secrets.VPS_USER }}'"
           echo "PORT='${{ secrets.VPS_SSH_PORT }}'"
 
-      - name: Test SSH port
+      - name: Test SSH Port
         run: |
           nc -zv ${{ secrets.VPS_HOST }} ${{ secrets.VPS_SSH_PORT }} || echo "SSH PORT NOT OPEN"
 
-      - name: SSH Connected OK?
+      - name: SSH Connection Test
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -74,7 +75,7 @@ jobs:
           source: "stack.yml"
           target: "/home/${{ secrets.VPS_USER }}/gubio"
 
-      - name: Deploy stack
+      - name: Deploy to Docker Swarm
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -85,7 +86,7 @@ jobs:
             cd ~/gubio
 
             docker login ghcr.io -u juangubio -p ${{ secrets.GHCR_PAT }}
-            docker pull ghcr.io/juangubio/gubio-app:${{ env.IMAGE_TAG }}
+            docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
             docker stack rm gubio || true
             sleep 20
