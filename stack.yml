@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   gubio:
-    image: ghcr.io/juangubio/gubio-app:1.0.0
+    image: ghcr.io/juangubio/gubio-app:1.0.5
 
     deploy:
       replicas: 1
@@ -22,6 +22,7 @@ services:
         - "traefik.http.routers.gubio-secure.rule=Host(`gubio.byronrm.com`)"
         - "traefik.http.routers.gubio-secure.tls=true"
         - "traefik.http.routers.gubio-secure.tls.certresolver=http"
+        - "traefik.http.routers.gubio-secure.service=gubio"
 
         # Puerto interno de Flask
         - "traefik.http.services.gubio.loadbalancer.server.port=2407"
