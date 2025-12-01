@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  gubio:
+    image: ghcr.io/juangubio/gubio-app:1.0.5
+
+    ports:
+      - "2407"   # Necesario para que Traefik detecte el puerto
+
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+
+        # HTTP
+        - "traefik.http.routers.gubio.entrypoints=http"
+        - "traefik.http.routers.gubio.rule=Host(`gubio.byronrm.com`)"
+
+        # Redirect a HTTPS
+        - "traefik.http.middlewares.gubio-https-redirect.redirectscheme.scheme=https"
+        - "traefik.http.routers.gubio.middlewares=gubio-https-redirect"
+
+        # HTTPS
+        - "traefik.http.routers.gubio-secure.entrypoints=https"
+        - "traefik.http.routers.gubio-secure.rule=Host(`gubio.byronrm.com`)"
+        - "traefik.http.routers.gubio-secure.tls=true"
+        - "traefik.http.routers.gubio-secure.tls.certresolver=letsencrypt"
+
+        # Puerto interno del contenedor
+        - "traefik.http.services.gubio.loadbalancer.server.port=2407"
+
+        # Red Traefik
+        - "traefik.docker.network=traefik-public"
+
+    networks:
+      - traefik-public
+
+networks:
+  traefik-public:
+    external: true
