@@ -109,7 +109,7 @@ def about():
     return render_template_string(
         html_base,
         title="Sobre la app yavirac",
-        heading="Acerca de este proyecto yavirac",
+        heading="Acerca de este proyecto nfeudhfiuefh yaviraccc",
         message="Proyecto automatizado con GitHub Actions, Docker Buildx y Traefik.",
         button_text="Volver al inicio",
         button_link="/"
