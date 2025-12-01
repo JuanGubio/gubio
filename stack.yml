@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   gubio:
-    image: ghcr.io/gubio/gubio-app:1.0.5
+    image: ghcr.io/juangubio/gubio-app:1.0.5
 
     ports:
       - "2407"   # Necesario para que Traefik detecte el puerto
