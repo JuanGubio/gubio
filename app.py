@@ -8,42 +8,85 @@ html_base = """
 <head>
     <meta charset="UTF-8">
     <title>{{ title }}</title>
+
     <style>
         body {
             margin: 0;
             padding: 0;
-            font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(120deg, #0f0f0f, #1a1a1a, #111);
-            color: white;
+            height: 100vh;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
-            text-align: center;
-        }
-        h1 { font-size: 3rem; margin-bottom: 10px; }
-        p  { font-size: 1.3rem; opacity: .8; margin-bottom: 40px; }
-        a.button {
-            padding: 12px 26px;
-            background: #6200ea;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle at top, #1c1c1c, #0a0a0a 70%);
             color: white;
-            border-radius: 10px;
-            text-decoration: none;
+            overflow: hidden;
         }
-        a.button:hover { background: #7b1fea; }
+
+        /* Animación suave de brillo */
+        @keyframes glow {
+            0%   { box-shadow: 0 0 12px rgba(0,200,255,.25); }
+            50%  { box-shadow: 0 0 22px rgba(0,200,255,.45); }
+            100% { box-shadow: 0 0 12px rgba(0,200,255,.25); }
+        }
+
+        .card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(12px);
+            padding: 40px 50px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            animation: glow 4s infinite;
+        }
+
+        h1 {
+            font-size: 2.7rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        p {
+            font-size: 1.25rem;
+            opacity: .85;
+            margin-bottom: 40px;
+        }
+
+        a.button {
+            padding: 14px 30px;
+            background: linear-gradient(90deg, #009dff, #00eaff);
+            border-radius: 12px;
+            color: black;
+            font-weight: bold;
+            text-decoration: none;
+            transition: .25s;
+        }
+
+        a.button:hover {
+            filter: brightness(1.25);
+            transform: scale(1.05);
+        }
+
+        footer {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.9rem;
+            opacity: .35;
+        }
     </style>
 </head>
 <body>
 
-<h1>{{ heading }}</h1>
-<p>{{ message }}</p>
+<div class="card">
+    <h1>{{ heading }}</h1>
+    <p>{{ message }}</p>
 
-{% if button_text %}
-<a class="button" href="{{ button_link }}">{{ button_text }}</a>
-{% endif %}
+    {% if button_text %}
+    <a class="button" href="{{ button_link }}">{{ button_text }}</a>
+    {% endif %}
+</div>
 
-<footer style="margin-top:40px; opacity:.4;">Servidor activo • Flask</footer>
+<footer>Servidor activo • Flask</footer>
 
 </body>
 </html>
@@ -54,9 +97,9 @@ def home():
     return render_template_string(
         html_base,
         title="juanpi tags",
-        heading="Bienvenido al servidor",
-        message="Este es un sitio montado con Flask en Docker.",
-        button_text="Ir a Sobre mí",
+        heading="Bienvenido a Juanpi Tags",
+        message="Servidor Flask desplegado con Docker + CI/CD.",
+        button_text="Ver información",
         button_link="/about"
     )
 
@@ -64,9 +107,9 @@ def home():
 def about():
     return render_template_string(
         html_base,
-        title="Sobre el sitio",
+        title="Sobre la app jp",
         heading="Acerca de este proyecto",
-        message="App Flask funcionando con CI/CD y Docker Swarm.",
+        message="Proyecto automatizado con GitHub Actions, Docker Buildx y Traefik.",
         button_text="Volver al inicio",
         button_link="/"
     )
