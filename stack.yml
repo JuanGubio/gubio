@@ -3,7 +3,7 @@ version: "3.9"
 services:
   nala:
     # ⚠ Cambia <OWNER> por el usuario de GitHub de la chica, igual que en la imagen del pipeline
-    image: ghcr.io/lizirina/nala-app:1.0.5
+    image: ghcr.io/gubiotags/nala-app:1.0.5
     deploy:
       replicas: 1
       labels:

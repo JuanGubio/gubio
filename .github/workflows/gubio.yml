@@ -94,14 +94,14 @@ jobs:
           port: ${{ secrets.VPS_SSH_PORT }}
           script: |
             echo "Desplegando stack..."
-            cd ~/irina
+            cd ~/gubio
 
             echo "PULL DE LA IMAGEN"
             docker login ghcr.io -u ${{ github.repository_owner }} -p ${{ secrets.GHCR_PAT }}
             docker pull ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
 
             echo "BAJANDO SERVICIO ANTERIOR"
-            docker stack rm irina || true
+            docker stack rm gubio || true
 
             echo "ESPERANDO 20s..."
             sleep 20
