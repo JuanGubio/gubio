@@ -24,20 +24,21 @@ html_base = """
         }
 
         /* Animación suave de brillo */
-        @keyframes glow {
-            0%   { box-shadow: 0 0 12px rgba(0,200,255,.25); }
-            50%  { box-shadow: 0 0 22px rgba(0,200,255,.45); }
-            100% { box-shadow: 0 0 12px rgba(0,200,255,.25); }
+        @keyframes glow-animation {
+            0%   { box-shadow: 0 0 12px rgba(0,200,255,0.25); }
+            50%  { box-shadow: 0 0 22px rgba(0,200,255,0.45); }
+            100% { box-shadow: 0 0 12px rgba(0,200,255,0.25); }
         }
 
         .card {
             background: rgba(255,255,255,0.06);
+            -webkit-backdrop-filter: blur(12px);
             backdrop-filter: blur(12px);
             padding: 40px 50px;
             border-radius: 22px;
             border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
-            animation: glow 4s infinite;
+            animation: glow-animation 4s infinite;
         }
 
         h1 {
@@ -48,7 +49,7 @@ html_base = """
 
         p {
             font-size: 1.25rem;
-            opacity: .85;
+            opacity: 0.85;
             margin-bottom: 40px;
         }
 
@@ -59,7 +60,7 @@ html_base = """
             color: black;
             font-weight: bold;
             text-decoration: none;
-            transition: .25s;
+            transition: 0.25s;
         }
 
         a.button:hover {
@@ -71,7 +72,7 @@ html_base = """
             position: absolute;
             bottom: 20px;
             font-size: 0.9rem;
-            opacity: .35;
+            opacity: 0.35;
         }
     </style>
 </head>
@@ -96,7 +97,7 @@ html_base = """
 def home():
     return render_template_string(
         html_base,
-        title="juanpi tags",
+        title="Juanpi Tags",
         heading="Bienvenido a Juanpi Tags",
         message="Servidor Flask desplegado con Docker + CI/CD.",
         button_text="Ver información",
@@ -107,7 +108,7 @@ def home():
 def about():
     return render_template_string(
         html_base,
-        title="Sobre la app jp",
+        title="Sobre la app",
         heading="Acerca de este proyecto",
         message="Proyecto automatizado con GitHub Actions, Docker Buildx y Traefik.",
         button_text="Volver al inicio",
